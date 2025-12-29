@@ -123,9 +123,8 @@
             cursor: not-allowed;
         }
 
-        /* Кнопка "Забрать подарки" */
         #claim-button {
-            display: none; /* Показывается после выигрыша */
+            display: none;
             margin: 40px 0 20px;
             padding: 20px 60px;
             font-size: 1.8em;
@@ -204,7 +203,6 @@
         <div class="prize-card" id="prize3"></div>
     </div>
 
-    <!-- Кнопка "Забрать подарки ❤️" -->
     <button id="claim-button">Забрать подарки ❤️</button>
 
     <script>
@@ -264,7 +262,7 @@
             spinBtn.disabled = true;
             prizeCards.forEach(p => { p.classList.remove('reveal'); p.innerHTML = '' });
             reels.forEach(r => r.classList.remove('stopped'));
-            claimButton.style.display = 'none'; // скрываем кнопку при новом спине
+            claimButton.style.display = 'none';
             loadingText.style.opacity = 1;
 
             const winIndices = groups.map(g => Math.floor(Math.random() * g.emojis.length));
@@ -330,7 +328,7 @@
                             loadingText.style.opacity = 0;
                             confettiExplosion();
                             revealPrizes(wins);
-                            claimButton.style.display = 'block'; // ПОКАЗЫВАЕМ КНОПКУ
+                            claimButton.style.display = 'block';
                             spinning = false;
                             spinBtn.disabled = false;
                             spinBtn.textContent = 'Ещё раз?';
@@ -361,10 +359,13 @@
             }
         }
 
-        // Действие кнопки "Забрать подарки"
+        // Кнопка "Забрать подарки"
         claimButton.addEventListener('click', () => {
-            alert('Твои подарки уже ждут тебя в реальности! ❤️\nС Новым годом, любимая! 🥂🎄\nЯ очень тебя люблю!');
-            // Можно добавить Telegram.WebApp.close() или что-то ещё
+            const prizesText = wins.map((win, i) => `${i+1}. ${win.emoji} ${win.text}`).join('\n');
+            const message = `🎉 Твои новогодние подарки: 🎉\n\n${prizesText}\n\nС Новым годом, моя любимая! ❤️\nЯ очень тебя люблю и горжусь тобой каждый день! 🥂✨`;
+
+            Telegram.WebApp.sendData(message);
+            setTimeout(() => Telegram.WebApp.close(), 500);
         });
 
         Telegram.WebApp.ready();
