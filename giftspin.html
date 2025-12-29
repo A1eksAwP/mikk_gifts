@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MIKK GIFT SPIN 🎰</title>
+    <script src="https://cdn.jsdelivr.net/npm/telegram-web-app@latest/lib/telegram-webapp.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at center, #1a0033, #000000);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Anton', sans-serif;
+            color: white;
+            overflow: hidden;
+            position: relative;
+            padding: 10px 0;
+            box-sizing: border-box;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: white;
+            opacity: 0.8;
+            pointer-events: none;
+            animation: snow 10s linear infinite;
+        }
+        @keyframes snow {
+            from { transform: translateY(-100vh); }
+            to { transform: translateY(100vh); }
+        }
+
+        h1 {
+            font-size: 2.4em;
+            background: linear-gradient(45deg, #ff8c00, #ffff00, #ff4500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px #ff8c00;
+            margin: 10px 0 5px;
+            letter-spacing: 4px;
+            text-align: center;
+        }
+
+        .loading-text {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            opacity: 0;
+            transition: opacity 0.5s;
+            text-shadow: 0 0 12px #ff8c00;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .slots-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 25px 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 50px #ff8c00;
+            backdrop-filter: blur(12px);
+            width: 90vw;
+            max-width: 400px;
+        }
+
+        .reel {
+            width: 140px;
+            height: 140px;
+            overflow: hidden;
+            border: 8px solid #333;
+            border-radius: 15px;
+            background: black;
+            box-shadow: inset 0 0 30px rgba(255,140,0,0.3);
+            transition: border 0.5s, box-shadow 0.5s;
+        }
+
+        .reel-strip {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .symbol {
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            background: linear-gradient(#333, #111);
+        }
+
+        .stopped {
+            border: 8px solid gold !important;
+            box-shadow: 0 0 60px gold, inset 0 0 80px rgba(255,215,0,1);
+            animation: pulse-glow 1.5s infinite alternate;
+        }
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 60px gold, inset 0 0 80px rgba(255,215,0,1); }
+            100% { box-shadow: 0 0 90px gold, inset 0 0 100px rgba(255,215,0,1); }
+        }
+
+        button {
+            margin: 30px 0;
+            padding: 16px 50px;
+            font-size: 1.6em;
+            background: linear-gradient(#ff8c00, #ff4500);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 0 35px #ff8c00;
+            letter-spacing: 2px;
+            min-width: 220px;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Кнопка "Забрать подарки" */
+        #claim-button {
+            display: none; /* Показывается после выигрыша */
+            margin: 40px 0 20px;
+            padding: 20px 60px;
+            font-size: 1.8em;
+            background: linear-gradient(45deg, #ff69b4, #ff1493, #ff8c8c);
+            box-shadow: 0 0 50px #ff69b4;
+            animation: heartbeat 2s infinite;
+        }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .prizes {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            width: 90vw;
+            max-width: 400px;
+            padding: 0 10px;
+            perspective: 1000px;
+        }
+
+        .prize-card {
+            width: 100%;
+            max-width: 320px;
+            min-height: 120px;
+            background: rgba(255,255,255,0.1);
+            border: 3px solid #ff8c00;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em;
+            text-align: center;
+            padding: 20px;
+            opacity: 0;
+            transform: translateY(80px) rotateX(-30deg) scale(0.8);
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 40px #ff8c00;
+            backdrop-filter: blur(10px);
+        }
+
+        .prize-card.reveal {
+            opacity: 1;
+            transform: translateY(0) rotateX(0) scale(1.05);
+        }
+
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            animation: confetti-fall 3.5s linear;
+        }
+        @keyframes confetti-fall {
+            to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <h1>MIKK GIFT SPIN</h1>
+    <div class="loading-text" id="loading">Распаковываем подарки...</div>
+
+    <div class="slots-container">
+        <div class="reel" id="reel1"><div class="reel-strip" id="strip1"></div></div>
+        <div class="reel" id="reel2"><div class="reel-strip" id="strip2"></div></div>
+        <div class="reel" id="reel3"><div class="reel-strip" id="strip3"></div></div>
+    </div>
+
+    <button id="spin">Крутить подаркомёт</button>
+
+    <div class="prizes">
+        <div class="prize-card" id="prize1"></div>
+        <div class="prize-card" id="prize2"></div>
+        <div class="prize-card" id="prize3"></div>
+    </div>
+
+    <!-- Кнопка "Забрать подарки ❤️" -->
+    <button id="claim-button">Забрать подарки ❤️</button>
+
+    <script>
+        const group1 = { emojis: ["🕯️", "📸", "🌌"], texts: ["Лепка подсвечника", "Фотосессия вдвоём в твоём стиле", "Звёздное небо в обсерватории"] };
+        const group2 = { emojis: ["📱", "💇‍♀️", "🎧"], texts: ["Смартфон", "Стайлер", "Наушники"] };
+        const group3 = { emojis: ["🎭", "🗺️", "📖"], texts: ["Билеты в театр", "Организация экскурсии", "Книга"] };
+        const groups = [group1, group2, group3];
+        const neutral = ["🎁", "🎄", "☃️"];
+
+        const loadingPhrases = [
+            "Распаковываем подарки...",
+            "Пересчитываем 0 и 1...",
+            "Спускаемся с небес на землю...",
+            "Греем шампанское...",
+            "Зажигаем гирлянду...",
+            "Лепим снеговика из подарков...",
+            "Пишем письмо Деду Морозу...",
+            "Подключаем магию Нового года..."
+        ];
+
+        const strips = document.querySelectorAll('.reel-strip');
+        const reels = document.querySelectorAll('.reel');
+        const loadingText = document.getElementById('loading');
+        const prizeCards = document.querySelectorAll('.prize-card');
+        const spinBtn = document.getElementById('spin');
+        const claimButton = document.getElementById('claim-button');
+        let spinning = false;
+        let phraseInterval;
+
+        function initReels() {
+            strips.forEach((strip, i) => {
+                strip.innerHTML = '';
+                for (let j = 0; j < 30; j++) {
+                    const div = document.createElement('div');
+                    div.classList.add('symbol');
+                    div.textContent = neutral[j % neutral.length];
+                    strip.appendChild(div);
+                }
+            });
+        }
+        initReels();
+
+        // Снежинки
+        for(let i = 0; i < 35; i++) {
+            const s = document.createElement('div');
+            s.classList.add('snowflake');
+            s.textContent = '❄';
+            s.style.left = Math.random() * 100 + 'vw';
+            s.style.fontSize = Math.random() * 15 + 8 + 'px';
+            s.style.animationDuration = Math.random() * 10 + 10 + 's';
+            document.body.appendChild(s);
+        }
+
+        spinBtn.addEventListener('click', () => {
+            if (spinning) return;
+            spinning = true;
+            spinBtn.disabled = true;
+            prizeCards.forEach(p => { p.classList.remove('reveal'); p.innerHTML = '' });
+            reels.forEach(r => r.classList.remove('stopped'));
+            claimButton.style.display = 'none'; // скрываем кнопку при новом спине
+            loadingText.style.opacity = 1;
+
+            const winIndices = groups.map(g => Math.floor(Math.random() * g.emojis.length));
+            const wins = winIndices.map((idx, i) => ({ text: groups[i].texts[idx], emoji: groups[i].emojis[idx] }));
+
+            strips.forEach((strip, i) => {
+                strip.innerHTML = '';
+                const emojis = groups[i].emojis;
+                for (let cycle = 0; cycle < 100; cycle++) {
+                    emojis.forEach(emoji => {
+                        const div = document.createElement('div');
+                        div.classList.add('symbol');
+                        div.textContent = emoji;
+                        strip.appendChild(div);
+                    });
+                }
+                const winDiv = document.createElement('div');
+                winDiv.classList.add('symbol');
+                winDiv.textContent = wins[i].emoji;
+                strip.appendChild(winDiv);
+            });
+
+            let phraseIndex = 0;
+            loadingText.textContent = loadingPhrases[phraseIndex++];
+            phraseInterval = setInterval(() => {
+                loadingText.textContent = loadingPhrases[phraseIndex++ % loadingPhrases.length];
+            }, 2200);
+
+            const symbolHeight = 140;
+            const cycleHeight = symbolHeight * 3;
+            const baseOffset = cycleHeight * 100;
+
+            strips.forEach((strip, index) => {
+                const reel = reels[index];
+                const stopTime = 8000 + index * 1000;
+
+                strip.style.transition = 'none';
+                strip.style.transform = 'translateY(0)';
+                strip.style.filter = 'blur(8px)';
+
+                requestAnimationFrame(() => {
+                    const overshoot = baseOffset + symbolHeight * (index === 2 ? 0.4 : 0.1);
+                    const finalOffset = baseOffset;
+
+                    strip.style.transition = `transform ${stopTime / 1000}s cubic-bezier(0.08, 0.82, 0.17, 1), filter ${stopTime / 1000}s ease-out`;
+                    strip.style.transform = `translateY(-${overshoot}px)`;
+                    strip.style.filter = 'blur(0px)';
+
+                    setTimeout(() => {
+                        if (index === 2) {
+                            strip.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+                            strip.style.transform = `translateY(-${finalOffset}px)`;
+                        } else {
+                            strip.style.transition = 'none';
+                            strip.style.transform = `translateY(-${finalOffset}px)`;
+                        }
+                        reel.classList.add('stopped');
+                    }, stopTime);
+
+                    if (index === 2) {
+                        setTimeout(() => {
+                            clearInterval(phraseInterval);
+                            loadingText.style.opacity = 0;
+                            confettiExplosion();
+                            revealPrizes(wins);
+                            claimButton.style.display = 'block'; // ПОКАЗЫВАЕМ КНОПКУ
+                            spinning = false;
+                            spinBtn.disabled = false;
+                            spinBtn.textContent = 'Ещё раз?';
+                        }, stopTime + 1000);
+                    }
+                });
+            });
+        });
+
+        function revealPrizes(wins) {
+            wins.forEach((win, i) => {
+                setTimeout(() => {
+                    prizeCards[i].innerHTML = `${win.emoji}<br><br><div style="line-height:1.4;">${win.text}</div>`;
+                    prizeCards[i].classList.add('reveal');
+                }, i * 800);
+            });
+        }
+
+        function confettiExplosion() {
+            for(let i = 0; i < 200; i++) {
+                const c = document.createElement('div');
+                c.classList.add('confetti');
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.background = ['#ff0066', '#00ff99', '#0066ff', '#ffcc00', '#ff69b4'][Math.floor(Math.random()*5)];
+                c.style.animationDelay = Math.random() * 1.5 + 's';
+                document.body.appendChild(c);
+                setTimeout(() => c.remove(), 5000);
+            }
+        }
+
+        // Действие кнопки "Забрать подарки"
+        claimButton.addEventListener('click', () => {
+            alert('Твои подарки уже ждут тебя в реальности! ❤️\nС Новым годом, любимая! 🥂🎄\nЯ очень тебя люблю!');
+            // Можно добавить Telegram.WebApp.close() или что-то ещё
+        });
+
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+    </script>
+</body>
+</html>
