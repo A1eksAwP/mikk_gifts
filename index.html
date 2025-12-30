@@ -230,6 +230,7 @@
         const spinBtn = document.getElementById('spin');
         const claimButton = document.getElementById('claim-button');
         let spinning = false;
+        let wins = [];
         let phraseInterval;
 
         function initReels() {
@@ -266,7 +267,7 @@
             loadingText.style.opacity = 1;
 
             const winIndices = groups.map(g => Math.floor(Math.random() * g.emojis.length));
-            const wins = winIndices.map((idx, i) => ({ text: groups[i].texts[idx], emoji: groups[i].emojis[idx] }));
+            wins = winIndices.map((idx, i) => ({ text: groups[i].texts[idx], emoji: groups[i].emojis[idx] }));
 
             strips.forEach((strip, i) => {
                 strip.innerHTML = '';
