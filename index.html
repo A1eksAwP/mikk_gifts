@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MIKK GIFT SPIN 🎰</title>
-    <script src="https://cdn.jsdelivr.net/npm/telegram-web-app@latest/lib/telegram-webapp.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 
@@ -359,19 +359,38 @@
             }
         }
 
+
+
+        // Функция, которая ждёт появления Telegram.WebApp
+        function waitForTelegramWebApp(callback, maxAttempts = 50, interval = 100) {
+            let attempts = 0;
+            const check = setInterval(() => {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    clearInterval(check);
+                    callback(window.Telegram.WebApp);
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(check);
+                    document.getElementById('error').classList.remove('hidden');
+                    console.error('Telegram WebApp не найден — вероятно, открыто вне Telegram');
+                }
+                attempts++;
+            }, interval);
+        }
+
         // Кнопка "Забрать подарки"
         claimButton.addEventListener('click', () => {
             const prizesText = wins.map((win, i) => `${i+1}. ${win.emoji} ${win.text}`).join('\n');
             const message = `🎉 Твои новогодние подарки: 🎉\n\n${prizesText}\n\nС Новым годом, моя любимая! ❤️\nЯ очень тебя люблю и горжусь тобой каждый день! 🥂✨`;
+            waitForTelegramWebApp(function(tg) {
+                // Теперь tg точно существует
+                tg.ready();
+                tg.expand();
 
-            tg.sendData(message);
-            setTimeout(() => tg.close(), 500);
+                tg.sendData(message);
+                setTimeout(() => tg.close(), 500);
+            })
         });
 
-        const tg = window.Telegram.WebApp;
-
-        tg.ready();
-        tg.expand();
     </script>
 </body>
 </html>
